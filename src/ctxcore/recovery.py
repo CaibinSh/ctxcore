@@ -130,7 +130,7 @@ def recovery(
 
 
 def enrichment4cells(
-    rnk_mtx: pd.DataFrame, regulon: GeneSignature, auc_threshold: float = 0.05
+    rnk_mtx: pd.DataFrame, regulon: GeneSignature, auc_threshold: float = 0.05, mini_frac_gene: float = 0.6
 ) -> pd.DataFrame:
     """
     Calculate the enrichment of the regulon for the cells in the ranking dataframe.
@@ -147,9 +147,9 @@ def enrichment4cells(
         list(zip(rnk_mtx.index.values, repeat(regulon.name))), names=["Cell", "Regulon"]
     )
     rnk = rnk_mtx.iloc[:, rnk_mtx.columns.isin(regulon.genes)]
-    if rnk.empty or (float(len(rnk.columns)) / float(len(regulon))) < 0.80:
+    if rnk.empty or (float(len(rnk.columns)) / float(len(regulon))) < mini_frac_gene:
         LOGGER.warning(
-            f"Less than 80% of the genes in {regulon.name} are present in the "
+            f"Less than {mini_frac_gene} of the genes in {regulon.name} are present in the "
             "expression matrix."
         )
         return pd.DataFrame(
@@ -173,6 +173,7 @@ def enrichment4features(
     gs: GeneSignature,
     rank_threshold: int = 5000,
     auc_threshold: float = 0.05,
+    mini_frac_gene: float = 0.6
 ) -> pd.DataFrame:
     """
     Calculate AUC and NES for all regulatory features in the supplied database using
